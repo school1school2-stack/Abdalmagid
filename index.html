@@ -8,37 +8,39 @@
 
     <style>
         :root {
-            --primary-blue: #0d47a1;
-            --matte-red: #ba0000;
+            --primary-color: #0d47a1;
+            --school-red: #ba0000;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
+            background: #f8fafc;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0;
         }
         .container {
-            background: white; padding: 2rem; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 90%; max-width: 450px; text-align: center;
+            background: white; padding: 2.5rem; border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            width: 90%; max-width: 420px; text-align: center;
         }
         input {
-            width: 100%; padding: 15px; border: 2px solid #e1e4e8;
+            width: 100%; padding: 15px; border: 2px solid #e2e8f0;
             border-radius: 12px; margin-bottom: 20px; font-size: 1rem;
             text-align: left; direction: ltr; outline: none;
         }
         .btn {
-            background: var(--primary-blue); color: white; border: none;
-            padding: 15px; border-radius: 12px; cursor: pointer;
-            width: 100%; font-weight: bold; font-size: 1rem;
+            background: var(--primary-color); color: white; border: none;
+            padding: 14px; border-radius: 10px; cursor: pointer;
+            width: 100%; font-weight: bold; font-size: 1rem; margin-bottom: 10px;
         }
-        #resultArea { margin-top: 20px; display: none; }
-        #canvas-holder { 
-            background: white; padding: 10px; 
-            display: inline-block; border-radius: 15px;
+        #resultArea { margin-top: 25px; display: none; animation: fadeIn 0.5s ease; }
+        #canvas-container { 
+            background: white; padding: 15px; 
+            display: inline-block; border-radius: 20px;
+            border: 1px solid #f1f5f9;
         }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .signature {
-            margin-top: 25px; font-weight: bold; color: var(--matte-red);
+            margin-top: 25px; font-weight: bold; color: var(--school-red);
             font-size: 0.9rem;
         }
     </style>
@@ -46,16 +48,17 @@
 <body>
 
 <div class="container">
-    <h2 style="color: #1e293b;">مختصر الروابط والـ QR الذكي</h2>
-    <p style="color: #64748b; margin-bottom: 20px;">ثانوية الأمير عبدالمجيد</p>
+    <h2 style="color: #1e293b; margin-bottom: 5px;">مختصر الروابط والـ QR</h2>
+    <p style="color: #64748b; margin-bottom: 25px;">ثانوية الأمير عبدالمجيد</p>
 
     <input type="url" id="longUrl" placeholder="ضع الرابط هنا..." required>
     <button class="btn" onclick="generatePremiumQR()">توليد الرمز المدمج</button>
 
     <div id="resultArea">
-        <div id="canvas-holder"></div>
-        <div id="shortUrl" style="margin: 15px 0; font-weight: bold; color: #2563eb;"></div>
-        <button class="btn" style="background:#10b981; margin-bottom: 10px;" onclick="copyLink()">نسخ الرابط</button>
+        <div id="canvas-container"></div>
+        <div id="shortUrl" style="margin: 15px 0; font-weight: bold; color: #2563eb; font-size: 0.9rem;"></div>
+        
+        <button class="btn" style="background:#10b981;" onclick="copyLink()">نسخ الرابط</button>
         <button class="btn" style="background:#4b5563;" onclick="downloadQR()">تحميل الرمز</button>
     </div>
 
@@ -66,15 +69,14 @@
 
 <script>
     let qrCode;
-    // رابط شعار المدرسة المرفوع (تأكد من رفعه في مستودعك باسم logo.png)
-    const logoUrl = "https://school1school2-stack.github.io/ABO-TAIF/logo.png";
+    // مسار الشعار الخاص بك المرفوع في GitHub
+    const logoUrl = "logo.png"; 
 
     async function generatePremiumQR() {
         const urlInput = document.getElementById('longUrl').value;
         if (!urlInput) return alert("فضلاً ضع الرابط أولاً");
 
         try {
-            // استخدام API الاختصار
             const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(urlInput)}`);
             const data = await res.json();
             const shortLink = data.shorturl;
@@ -82,50 +84,48 @@
             document.getElementById('shortUrl').innerText = shortLink;
             document.getElementById('resultArea').style.display = 'block';
 
-            // إعدادات الـ QR بالنمط "المودرن" المدمج
             qrCode = new QRCodeStyling({
                 width: 300,
                 height: 300,
-                type: "canvas",
                 data: shortLink,
-                image: logoUrl, // دمج شعارك هنا
+                image: logoUrl,
                 dotsOptions: {
-                    color: "#0d47a1",
-                    type: "extra-rounded" // نقاط مستديرة مثل الأمثلة
+                    color: "#000000",
+                    type: "rounded" // نقاط مستديرة أنيقة
                 },
                 backgroundOptions: { color: "#ffffff" },
                 imageOptions: {
                     crossOrigin: "anonymous",
                     margin: 5,
-                    imageSize: 0.4 // حجم الشعار في المنتصف
+                    imageSize: 0.45 // حجم الشعار الدائري
                 },
                 cornersSquareOptions: {
                     type: "extra-rounded",
-                    color: "#0d47a1"
+                    color: "#000000"
                 },
                 cornersDotOptions: {
                     type: "dot",
-                    color: "#0d47a1"
+                    color: "#000000"
                 },
-                qrOptions: { errorCorrectionLevel: "H" } // أعلى حماية لضمان القراءة
+                qrOptions: { errorCorrectionLevel: "H" }
             });
 
-            const holder = document.getElementById("canvas-holder");
+            const holder = document.getElementById("canvas-container");
             holder.innerHTML = "";
             qrCode.append(holder);
 
         } catch (e) {
-            alert("حدث خطأ في الاتصال، حاول مرة أخرى");
+            alert("فشل التوليد، تأكد من صحة الرابط.");
         }
     }
 
     function copyLink() {
         navigator.clipboard.writeText(document.getElementById('shortUrl').innerText);
-        alert("تم نسخ الرابط!");
+        alert("تم النسخ!");
     }
 
     function downloadQR() {
-        qrCode.download({ name: "School_QR_AlFaifi", extension: "png" });
+        qrCode.download({ name: "School_QR_Prince_Abdulmajeed", extension: "png" });
     }
 </script>
 
