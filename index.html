@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مختصر الروابط - ثانوية الأمير عبدالمجيد</title>
+    <title>مختصر الروابط الرسمي - ثانوية الأمير عبدالمجيد</title>
     <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
     <style>
         :root {
-            --main-blue: #0077b5;
-            --school-red: #ba0000;
-            --bg: #f8fafc;
+            --qr-color: #000000; /* اللون الأسود الموحد */
+            --bg-page: #f9fbff;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
+            background-color: var(--bg-page);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0;
         }
@@ -33,7 +32,7 @@
         }
 
         .btn {
-            background: #1e293b; color: white; border: none;
+            background: var(--qr-color); color: white; border: none;
             padding: 14px; border-radius: 12px; cursor: pointer;
             width: 100%; font-weight: bold; margin-bottom: 10px;
         }
@@ -46,7 +45,7 @@
         }
 
         .signature {
-            margin-top: 20px; font-weight: bold; color: var(--school-red);
+            margin-top: 20px; font-weight: bold; color: #ba0000;
             font-size: 0.9rem;
         }
     </style>
@@ -57,14 +56,14 @@
     <h2>مختصر الروابط والـ QR</h2>
     <p style="color: #64748b;">ثانوية الأمير عبدالمجيد</p>
 
-    <input type="url" id="longUrl" placeholder="أدخل الرابط هنا..." required>
-    <button class="btn" onclick="generateFixedQR()">توليد رمز قابل للقراءة</button>
+    <input type="url" id="longUrl" placeholder="أدخل الرابط الطويل هنا..." required>
+    <button class="btn" onclick="generateHarmonizedQR()">توليد الرمز الموحد</button>
 
     <div id="resultArea" style="display:none;">
         <div id="qr-container"></div>
-        <div id="shortUrl" style="margin-bottom: 15px; font-weight: bold; color: var(--main-blue);"></div>
-        <button class="btn" style="background:#059669;" onclick="copyLink()">نسخ الرابط</button>
-        <button class="btn" style="background:#4b5563;" onclick="downloadLink()">تحميل الرمز</button>
+        <div id="shortUrl" style="margin-bottom: 15px; font-weight: bold; color: #2563eb;"></div>
+        <button class="btn" style="background:#10b981;" onclick="copyLink()">نسخ الرابط</button>
+        <button class="btn" style="background:#4b5563;" onclick="downloadQR()">تحميل الرمز</button>
     </div>
 
     <div class="signature">
@@ -75,9 +74,9 @@
 <script>
     let qrStyled;
 
-    async function generateFixedQR() {
+    async function generateHarmonizedQR() {
         const url = document.getElementById('longUrl').value;
-        if (!url) return alert("ضع الرابط أولاً");
+        if (!url) return alert("فضلاً ضع الرابط");
 
         try {
             const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(url)}`);
@@ -91,25 +90,28 @@
                 width: 300,
                 height: 300,
                 data: finalUrl,
-                // السر هنا: رفع مستوى التصحيح إلى Q لضمان القراءة
-                qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
-                dotsOptions: { color: "#1e293b", type: "rounded" },
-                cornersSquareOptions: { type: "extra-rounded", color: "#1e293b" },
+                qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" },
+                dotsOptions: { 
+                    color: "#000000", 
+                    type: "extra-rounded" // جعل النقاط مستديرة لزيادة التناسق
+                },
+                cornersSquareOptions: { type: "extra-rounded", color: "#000000" },
+                cornersDotOptions: { type: "dot", color: "#000000" },
                 backgroundOptions: { color: "#ffffff" },
-                // تقليل حجم النص/الشعار في المركز لكي لا يغطي البيانات
+                // دمج اسم المدرسة باللون الأسود في المركز
                 image: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="40">
-                        <rect width="100%" height="100%" fill="white" rx="5"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="130" height="45">
+                        <rect width="100%" height="100%" fill="white" rx="8"/>
                         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" 
-                        font-family="Arial" font-weight="bold" font-size="10" fill="#ba0000">
+                        font-family="Tahoma, Arial" font-weight="bold" font-size="11" fill="#000000">
                             ثانوية الأمير عبدالمجيد
                         </text>
                     </svg>
                 `),
                 imageOptions: {
-                    hideBackgroundDots: true, // إخفاء النقاط خلف النص لزيادة الدقة
-                    imageSize: 0.3, // حجم صغير ومناسب (30% من المساحة فقط)
-                    margin: 5
+                    hideBackgroundDots: true,
+                    imageSize: 0.35, // حجم متوازن للقراءة والشكل
+                    margin: 4
                 }
             });
 
@@ -117,16 +119,16 @@
             container.innerHTML = "";
             qrStyled.append(container);
 
-        } catch (e) { alert("حدث خطأ"); }
+        } catch (e) { alert("حدث خطأ في التوليد"); }
     }
 
     function copyLink() {
         navigator.clipboard.writeText(document.getElementById('shortUrl').innerText);
-        alert("تم النسخ");
+        alert("تم النسخ بنجاح");
     }
 
-    function downloadLink() {
-        qrStyled.download({ name: "School_QR", extension: "png" });
+    function downloadQR() {
+        qrStyled.download({ name: "School_QR_Harmonized", extension: "png" });
     }
 </script>
 </body>
