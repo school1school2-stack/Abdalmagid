@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مختصر الروابط الرسمي - ثانوية الأمير عبدالمجيد</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;700&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
     <style>
         :root {
-            --qr-black: #000000;
-            --bg-page: #f4f4f9;
+            --qr-color: #000000; /* الأسود الكامل للدمج */
+            --bg-page: #f9fafb;
         }
 
         body {
-            font-family: 'Amiri', serif;
+            font-family: 'Cairo', sans-serif;
             background-color: var(--bg-page);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0;
@@ -23,19 +23,19 @@
         .container {
             background: white; padding: 2.5rem; border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 95%; max-width: 420px; text-align: center;
+            width: 90%; max-width: 400px; text-align: center;
         }
 
         input {
-            width: 100%; padding: 14px; border: 2px solid #eee;
-            border-radius: 10px; margin-bottom: 15px; font-size: 1.1rem;
+            width: 100%; padding: 14px; border: 2px solid #e5e7eb;
+            border-radius: 10px; margin-bottom: 15px; font-size: 1rem;
             text-align: left; direction: ltr; outline: none; font-family: sans-serif;
         }
 
         .btn {
-            background: var(--qr-black); color: white; border: none;
+            background: var(--qr-color); color: white; border: none;
             padding: 14px; border-radius: 10px; cursor: pointer;
-            width: 100%; font-weight: bold; margin-bottom: 10px; font-size: 1.1rem;
+            width: 100%; font-weight: bold; margin-bottom: 10px; font-size: 1rem;
         }
 
         #qr-container {
@@ -43,30 +43,30 @@
             padding: 10px;
             display: inline-block;
             background: white;
-            border: 1px solid #f0f0f0;
+            border: 1px solid #eee;
             border-radius: 15px;
         }
 
         .signature {
             margin-top: 25px; font-weight: bold; color: #ba0000;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="margin-bottom: 5px;">مختصر الروابط والـ QR</h2>
-    <p style="color: #666; margin-bottom: 25px;">ثانوية الأمير عبدالمجيد</p>
+    <h2 style="margin-bottom: 5px;">مختصر الروابط الذكي</h2>
+    <p style="color: #6b7280; margin-bottom: 25px;">ثانوية الأمير عبدالمجيد</p>
 
-    <input type="url" id="longUrl" placeholder="https://رابط-الملف-الطويل..." required>
-    <button class="btn" onclick="generateOfficialQR()">توليد الرمز الرسمي</button>
+    <input type="url" id="longUrl" placeholder="أدخل الرابط الطويل هنا..." required>
+    <button class="btn" onclick="generateEngravedQR()">توليد الرمز المدمج (نقش خفي)</button>
 
     <div id="resultArea" style="display:none;">
         <div id="qr-container"></div>
-        <div id="shortUrl" style="margin-bottom: 15px; font-weight: bold; color: #1a73e8; font-family: sans-serif;"></div>
-        <button class="btn" style="background:#10b981;" onclick="copyLink()">نسخ الرابط</button>
-        <button class="btn" style="background:#333;" onclick="downloadQR()">تحميل الرمز</button>
+        <div id="shortUrl" style="margin-bottom: 15px; font-weight: bold; color: #2563eb; font-family: sans-serif; font-size:0.9rem;"></div>
+        <button class="btn" style="background:#059669;" onclick="copyLink()">نسخ الرابط</button>
+        <button class="btn" style="background:#4b5563;" onclick="downloadQR()">تحميل الرمز</button>
     </div>
 
     <div class="signature">
@@ -77,7 +77,7 @@
 <script>
     let qrStyled;
 
-    async function generateOfficialQR() {
+    async function generateEngravedQR() {
         const url = document.getElementById('longUrl').value;
         if (!url) return alert("فضلاً ضع الرابط");
 
@@ -90,30 +90,30 @@
             document.getElementById('resultArea').style.display = 'block';
 
             qrStyled = new QRCodeStyling({
-                width: 300,
-                height: 300,
+                width: 320,
+                height: 320,
                 data: finalUrl,
                 qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" },
                 dotsOptions: { 
                     color: "#000000", 
-                    type: "rounded" // نقاط مستديرة بشكل رزين
+                    type: "rounded" // نقاط مستديرة رزينة تليق بالنقش
                 },
                 cornersSquareOptions: { type: "extra-rounded", color: "#000000" },
+                cornersDotOptions: { type: "dot", color: "#000000" },
                 backgroundOptions: { color: "#ffffff" },
-                // دمج اسم المدرسة بخط "أميري" الرسمي
+                // سر النقش الخفي: دمج النص مباشرة بدون خلفية بيضاء
                 image: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="140" height="50">
-                        <rect width="100%" height="100%" fill="white" rx="5"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="50">
                         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" 
-                        font-family="Amiri, serif" font-weight="bold" font-size="14" fill="#000000">
+                        font-family="'Cairo', sans-serif" font-weight="700" font-size="11" fill="#000000">
                             ثانوية الأمير عبدالمجيد
                         </text>
                     </svg>
                 `),
                 imageOptions: {
-                    hideBackgroundDots: true,
-                    imageSize: 0.4, // حجم متوازن يبرز الخط الرسمي
-                    margin: 2
+                    hideBackgroundDots: true, // إخفاء النقاط الخلفية لزيادة وضوح الحروف عند التركيز
+                    imageSize: 0.45, // حجم متوازن يسمح للماسح بالعمل وللعين بالتركيز
+                    margin: 0 // تداخل مباشر مع النقش
                 }
             });
 
@@ -126,11 +126,11 @@
 
     function copyLink() {
         navigator.clipboard.writeText(document.getElementById('shortUrl').innerText);
-        alert("تم النسخ");
+        alert("تم النسخ بنجاح");
     }
 
     function downloadQR() {
-        qrStyled.download({ name: "Official_School_QR", extension: "png" });
+        qrStyled.download({ name: "Official_School_QR_Engraved", extension: "png" });
     }
 </script>
 </body>
