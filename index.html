@@ -3,65 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مختصر الروابط الرسمي - ثانوية الأمير عبدالمجيد</title>
+    <title>مختصر الروابط والـ QR - ثانوية الأمير عبدالمجيد</title>
     <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
     <style>
         :root {
-            /* اللون الأزرق المتدرج المتوافق مع شعارك */
-            --qr-blue: #0077b5; 
-            --qr-blue-fade: #00bfff;
-            --bg-color: #f8fafc;
+            --primary-blue: #0d47a1;
+            --matte-red: #ba0000;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            background: #f0f2f5;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0;
         }
-
         .container {
-            background: white; padding: 2.5rem; border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            background: white; padding: 2rem; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             width: 90%; max-width: 450px; text-align: center;
         }
-
         input {
-            width: 100%; padding: 15px; border: 2px solid #e2e8f0;
+            width: 100%; padding: 15px; border: 2px solid #e1e4e8;
             border-radius: 12px; margin-bottom: 20px; font-size: 1rem;
             text-align: left; direction: ltr; outline: none;
         }
-
         .btn {
-            background: var(--qr-blue); color: white; border: none;
+            background: var(--primary-blue); color: white; border: none;
             padding: 15px; border-radius: 12px; cursor: pointer;
-            width: 100%; font-weight: bold; margin-bottom: 10px; font-size: 1rem;
-            transition: all 0.3s;
+            width: 100%; font-weight: bold; font-size: 1rem;
         }
-
-        .btn:hover {
-            background: var(--qr-blue-fade);
+        #resultArea { margin-top: 20px; display: none; }
+        #canvas-holder { 
+            background: white; padding: 10px; 
+            display: inline-block; border-radius: 15px;
         }
-
-        .result-area {
-            margin-top: 25px; display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        #qr-container {
-            margin: 20px 0;
-            display: inline-block;
-            background: white;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #eee;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         .signature {
-            margin-top: 25px; font-weight: bold; color: #ba0000;
+            margin-top: 25px; font-weight: bold; color: var(--matte-red);
             font-size: 0.9rem;
         }
     </style>
@@ -69,17 +46,17 @@
 <body>
 
 <div class="container">
-    <h2 style="color: var(--qr-blue); margin-bottom: 5px;">مختصر الروابط والـ QR</h2>
-    <p style="color: #64748b; margin-bottom: 25px;">ثانوية الأمير عبدالمجيد</p>
+    <h2 style="color: #1e293b;">مختصر الروابط والـ QR الذكي</h2>
+    <p style="color: #64748b; margin-bottom: 20px;">ثانوية الأمير عبدالمجيد</p>
 
-    <input type="url" id="longUrl" placeholder="أدخل الرابط الطويل هنا..." required>
-    <button class="btn" onclick="generateIntegratedQR()">توليد الرمز المدمج والمنقوش</button>
+    <input type="url" id="longUrl" placeholder="ضع الرابط هنا..." required>
+    <button class="btn" onclick="generatePremiumQR()">توليد الرمز المدمج</button>
 
-    <div id="resultArea" class="result-area">
-        <div id="qr-container"></div>
-        <div id="shortUrl" style="margin-bottom: 15px; font-weight: bold; color: #2563eb; font-size: 0.9rem;"></div>
-        <button class="btn" style="background:#10b981;" onclick="copyLink()">نسخ الرابط</button>
-        <button class="btn" style="background:#333;" onclick="downloadQR()">تحميل الرمز المدمج</button>
+    <div id="resultArea">
+        <div id="canvas-holder"></div>
+        <div id="shortUrl" style="margin: 15px 0; font-weight: bold; color: #2563eb;"></div>
+        <button class="btn" style="background:#10b981; margin-bottom: 10px;" onclick="copyLink()">نسخ الرابط</button>
+        <button class="btn" style="background:#4b5563;" onclick="downloadQR()">تحميل الرمز</button>
     </div>
 
     <div class="signature">
@@ -88,130 +65,67 @@
 </div>
 
 <script>
-    let finalQR;
+    let qrCode;
+    // رابط شعار المدرسة المرفوع (تأكد من رفعه في مستودعك باسم logo.png)
+    const logoUrl = "https://school1school2-stack.github.io/ABO-TAIF/logo.png";
 
-    async function generateIntegratedQR() {
-        const inputUrl = document.getElementById('longUrl').value;
-        if (!inputUrl) return alert("فضلاً ضع الرابط أولاً");
+    async function generatePremiumQR() {
+        const urlInput = document.getElementById('longUrl').value;
+        if (!urlInput) return alert("فضلاً ضع الرابط أولاً");
 
         try {
-            // خطوة الاختصار
-            const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(inputUrl)}`);
+            // استخدام API الاختصار
+            const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(urlInput)}`);
             const data = await res.json();
-            const shortUrl = data.shorturl;
+            const shortLink = data.shorturl;
 
-            document.getElementById('shortUrl').innerText = shortUrl;
+            document.getElementById('shortUrl').innerText = shortLink;
             document.getElementById('resultArea').style.display = 'block';
 
-            // إنشاء الـ QR بالنمط المنقوش والمدمج (Integrated Style)
-            finalQR = new QRCodeStyling({
-                width: 320,
-                height: 320,
-                data: shortUrl,
-                qrOptions: { errorCorrectionLevel: "H" }, // مستوى تصحيح عالي لضمان القراءة بعد الدمج
+            // إعدادات الـ QR بالنمط "المودرن" المدمج
+            qrCode = new QRCodeStyling({
+                width: 300,
+                height: 300,
+                type: "canvas",
+                data: shortLink,
+                image: logoUrl, // دمج شعارك هنا
                 dotsOptions: {
-                    color: "#0077b5", // لون النقاط الأزرق المتدرج الأساسي
-                    type: "extra-rounded" // نقاط مستديرة تعطي شعوراً بالنحت
+                    color: "#0d47a1",
+                    type: "extra-rounded" // نقاط مستديرة مثل الأمثلة
                 },
                 backgroundOptions: { color: "#ffffff" },
-                cornersSquareOptions: {
-                    type: "extra-rounded", // زوايا مستديرة
-                    color: "#0077b5"
-                },
-                cornersDotOptions: { type: "dot", color: "#0077b5" },
-                // دمج شعارك المدمج كقطعة واحدة داخل بيانات الـ QR Code
-                image: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150">
-                        <defs>
-                            <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                                <stop offset="0%" style="stop-color:#00bfff; stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#0077b5; stop-opacity:1" />
-                            </radialGradient>
-                        </defs>
-                        <circle cx="75" cy="75" r="70" fill="url(#grad1)" />
-                        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="#ffffff">
-                            ثانوية الأمير عبدالمجيد
-                        </text>
-                        <foreignObject x="40" y="40" width="70" height="70">
-                            <canvas width="70" height="70" id="integrated-data-canvas"></canvas>
-                        </foreignObject>
-                    </svg>
-                `),
                 imageOptions: {
                     crossOrigin: "anonymous",
                     margin: 5,
-                    imageSize: 0.45 // حجم متوازن يسمح للماسح بالعمل وللعين بالتركيز
-                }
+                    imageSize: 0.4 // حجم الشعار في المنتصف
+                },
+                cornersSquareOptions: {
+                    type: "extra-rounded",
+                    color: "#0d47a1"
+                },
+                cornersDotOptions: {
+                    type: "dot",
+                    color: "#0d47a1"
+                },
+                qrOptions: { errorCorrectionLevel: "H" } // أعلى حماية لضمان القراءة
             });
 
-            const container = document.getElementById("qr-container");
-            container.innerHTML = "";
-            finalQR.append(container);
+            const holder = document.getElementById("canvas-holder");
+            holder.innerHTML = "";
+            qrCode.append(holder);
 
-            // خطوة إضافية: رسم بيانات الـ QR Code الأصلية كشعار مدمج داخل الدائرة
-            // هذا يتطلب الحصول على بيانات الـ QR Code الأصلية كصورة
-            // سنقوم بتحويل الـ QR Code المولد إلى صورة مؤقتة للحصول على بياناته
-            finalQR._canvas.toBlob((blob) => {
-                const url = URL.createObjectURL(blob);
-                const img = new Image();
-                img.onload = () => {
-                    // بعد تحميل الصورة، سنحصل على بيانات الـ QR Code الأصلية
-                    // ونرسمها كشعار مدمج داخل الدائرة
-                    const dataCanvas = document.getElementById("integrated-data-canvas");
-                    const dataCtx = dataCanvas.getContext("2d");
-                    
-                    // رسم بيانات الـ QR Code الأصلية داخل الدائرة
-                    dataCtx.drawImage(img, 0, 0, 70, 70);
-                    
-                    // تحويل بيانات الـ QR Code إلى اللون الأبيض لتناسب الدائرة
-                    // هذا يتطلب معالجة صورة متقدمة
-                    // سنقوم بتطبيق فلتر لتحويل اللون الأسود إلى الأبيض
-                    const imageData = dataCtx.getImageData(0, 0, 70, 70);
-                    const data = imageData.data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        // إذا كان اللون قريباً من الأسود (قيمة قليلة)، فاجعله أبيض
-                        if (data[i] < 50 && data[i + 1] < 50 && data[i + 2] < 50) {
-                            data[i] = 255;
-                            data[i + 1] = 255;
-                            data[i + 2] = 255;
-                        }
-                    }
-                    dataCtx.putImageData(imageData, 0, 0);
-
-                    // بعد الانتهاء من دمج البيانات، سنقوم بتحديث الـ QR Code المولد
-                    // بهذه الطريقة، سيحتوي الـ QR Code النهائي على شعارك المدمج مع البيانات المعاد توزيعها
-                    finalQR._opts.image = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
-                        <svg xmlns="http://www.w3.org/2000/svg" width="150" height="150">
-                            <defs>
-                                <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                                    <stop offset="0%" style="stop-color:#00bfff; stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#0077b5; stop-opacity:1" />
-                                </radialGradient>
-                            </defs>
-                            <circle cx="75" cy="75" r="70" fill="url(#grad1)" />
-                            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="12" fill="#ffffff">
-                                ثانوية الأمير عبدالمجيد
-                            </text>
-                            <image x="40" y="40" width="70" height="70" href="${dataCanvas.toDataURL()}" />
-                        </svg>
-                    `);
-                    
-                    // تحديث الـ QR Code المولد
-                    finalQR.update();
-                };
-                img.src = url;
-            });
-
-        } catch (e) { alert("حدث خطأ في التوليد"); }
+        } catch (e) {
+            alert("حدث خطأ في الاتصال، حاول مرة أخرى");
+        }
     }
 
     function copyLink() {
         navigator.clipboard.writeText(document.getElementById('shortUrl').innerText);
-        alert("تم النسخ!");
+        alert("تم نسخ الرابط!");
     }
 
     function downloadQR() {
-        finalQR.download({ name: "School_QR_Harmonized", extension: "png" });
+        qrCode.download({ name: "School_QR_AlFaifi", extension: "png" });
     }
 </script>
 
