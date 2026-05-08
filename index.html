@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مختصر الروابط الرسمي - ثانوية الأمير عبدالمجيد</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>مختصر الروابط الاحترافي - ثانوية الأمير عبدالمجيد</title>
+    <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 
     <style>
         :root {
-            --primary-color: #1a1a1a;
-            --school-red: #ba0000;
-            --bg-color: #f4f7f6;
+            --brand-color: #0077b5; /* يمكنك تغيير اللون هنا (أزرق مثل LinkedIn أو أسود) */
+            --bg-color: #f0f2f5;
         }
 
         body {
@@ -21,34 +20,40 @@
         }
 
         .container {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 25px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: white; padding: 2rem; border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
             width: 90%; max-width: 450px; text-align: center;
         }
 
         input {
-            width: 100%; padding: 15px; border: 2px solid #eee;
-            border-radius: 12px; margin-bottom: 15px; font-size: 1rem;
-            text-align: left; direction: ltr;
+            width: 100%; padding: 15px; border: 2px solid #e1e4e8;
+            border-radius: 12px; margin-bottom: 20px; font-size: 1rem;
+            text-align: left; direction: ltr; outline: none;
         }
 
         .btn {
-            background: var(--primary-color); color: white; border: none;
+            background: var(--brand-color); color: white; border: none;
             padding: 15px; border-radius: 12px; cursor: pointer;
-            width: 100%; font-weight: bold; margin-bottom: 10px;
+            width: 100%; font-weight: bold; margin-bottom: 10px; font-size: 1rem;
         }
 
         .result-area {
-            margin-top: 20px; padding: 15px; border-radius: 15px;
-            background: #fff; border: 1px dashed #ccc; display: none;
+            margin-top: 25px; display: none;
+            animation: fadeIn 0.5s ease;
         }
 
-        #canvas-container { margin: 20px 0; position: relative; }
+        #canvas-container {
+            margin-bottom: 20px;
+            background: #fff;
+            display: inline-block;
+            padding: 10px;
+            border-radius: 20px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .signature {
-            margin-top: 25px; font-weight: bold; color: var(--school-red);
+            margin-top: 25px; font-weight: bold; color: #ba0000;
             font-size: 0.9rem;
         }
     </style>
@@ -56,19 +61,17 @@
 <body>
 
 <div class="container">
-    <h2 style="margin-bottom: 10px;">مختصر الروابط الرسمي</h2>
-    <p style="color: #666; margin-bottom: 25px;">ثانوية الأمير عبدالمجيد</p>
+    <h2 style="margin-bottom: 5px;">مختصر الروابط الذكي</h2>
+    <p style="color: #65676b; margin-bottom: 20px;">ثانوية الأمير عبدالمجيد</p>
 
-    <input type="url" id="longUrl" placeholder="أدخل الرابط الطويل هنا..." required>
-    <button class="btn" onclick="generateSmartQR()">توليد الرمز المدمج</button>
+    <input type="url" id="longUrl" placeholder="https://example.com/very-long-link" required>
+    <button class="btn" onclick="generateQR()">توليد الرمز الاحترافي</button>
 
     <div id="resultArea" class="result-area">
-        <div id="canvas-container">
-            <canvas id="qrCanvas"></canvas>
-        </div>
-        <div id="shortUrl" style="margin-bottom: 15px; font-size: 0.8rem; color: #2563eb; font-weight: bold;"></div>
-        <button class="btn" style="background:#10b981;" onclick="copyLink()">نسخ الرابط المختصر</button>
-        <button class="btn" style="background:#4b5563;" onclick="downloadQR()">حفظ صورة الرمز</button>
+        <div id="canvas-container"></div>
+        <div id="shortUrl" style="margin-bottom: 15px; font-weight: bold; color: var(--brand-color);"></div>
+        <button class="btn" style="background:#10b981;" onclick="copyLink()">نسخ الرابط</button>
+        <button class="btn" style="background:#333;" onclick="downloadQR()">تحميل الرمز</button>
     </div>
 
     <div class="signature">
@@ -76,71 +79,58 @@
     </div>
 </div>
 
-<div id="temp-qrcode" style="display:none;"></div>
-
 <script>
-    async function generateSmartQR() {
-        const longUrl = document.getElementById('longUrl').value;
-        const shortUrlDiv = document.getElementById('shortUrl');
-        
-        if (!longUrl) return alert("فضلاً ضع الرابط أولاً");
+    let qrCode;
+
+    async function generateQR() {
+        const urlInput = document.getElementById('longUrl').value;
+        if (!urlInput) return alert("فضلاً أدخل الرابط");
 
         try {
-            const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
-            const data = await response.json();
-            
-            if (data.shorturl) {
-                shortUrlDiv.innerText = data.shorturl;
-                renderQR(data.shorturl);
-                document.getElementById('resultArea').style.display = 'block';
-            }
-        } catch (e) { alert("خطأ في الاتصال"); }
-    }
+            const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(urlInput)}`);
+            const data = await res.json();
+            const shortLink = data.shorturl;
 
-    function renderQR(text) {
-        const tempDiv = document.getElementById('temp-qrcode');
-        tempDiv.innerHTML = "";
-        
-        // توليد QR بمستوى تصحيح عالي (H) للسماح بوضع نص في المركز
-        new QRCode(tempDiv, {
-            text: text,
-            width: 300,
-            height: 300,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
+            document.getElementById('shortUrl').innerText = shortLink;
+            document.getElementById('resultArea').style.display = 'block';
 
-        // انتظر التوليد ثم ارسم على الـ Canvas
-        setTimeout(() => {
-            const qrImg = tempDiv.querySelector('img');
-            const canvas = document.getElementById('qrCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = 350;
-            canvas.height = 350;
+            // إنشاء الـ QR بالنمط العصري (LinkedIn Style)
+            qrCode = new QRCodeStyling({
+                width: 300,
+                height: 300,
+                type: "svg",
+                data: shortLink,
+                dotsOptions: {
+                    color: "#0077b5", // لون النقاط (أزرق)
+                    type: "extra-rounded" // جعل النقاط مستديرة جداً
+                },
+                backgroundOptions: {
+                    color: "#ffffff",
+                },
+                cornersSquareOptions: {
+                    type: "extra-rounded", // الزوايا المربعة تصبح مستديرة
+                    color: "#0077b5"
+                },
+                cornersDotOptions: {
+                    type: "dot",
+                    color: "#0077b5"
+                },
+                // إضافة النص في المركز (بدلاً من الصورة نستخدم نصاً مصمماً)
+                image: "https://via.placeholder.com/100x100/ffffff/ba0000?text=%D8%A3.%D9%85", // يمكن استبداله بشعار المدرسة لاحقاً
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 5,
+                    imageSize: 0.4
+                }
+            });
 
-            // خلفية بيضاء
-            ctx.fillStyle = "white";
-            ctx.fillRect(0,0,350,350);
+            const container = document.getElementById("canvas-container");
+            container.innerHTML = "";
+            qrCode.append(container);
 
-            // رسم الـ QR
-            ctx.drawImage(qrImg, 25, 25, 300, 300);
-
-            // إعداد مربع المركز (دمج اسم المدرسة)
-            const boxSize = 100;
-            const x = (350 - boxSize) / 2;
-            const y = (350 - boxSize) / 2;
-
-            ctx.fillStyle = "white";
-            ctx.fillRect(x, y, boxSize, 40); // خلفية للنص في المركز
-
-            ctx.fillStyle = "#ba0000"; // أحمر مطفي
-            ctx.font = "bold 14px Tahoma";
-            ctx.textAlign = "center";
-            ctx.fillText("ثانوية", 350/2, y + 15);
-            ctx.fillText("الأمير عبدالمجيد", 350/2, y + 33);
-        }, 100);
+        } catch (e) {
+            alert("حدث خطأ في توليد الرابط");
+        }
     }
 
     function copyLink() {
@@ -149,10 +139,7 @@
     }
 
     function downloadQR() {
-        const link = document.createElement('a');
-        link.download = 'QR_Prince_Abdulmajeed.png';
-        link.href = document.getElementById('qrCanvas').toDataURL();
-        link.click();
+        qrCode.download({ name: "Prince_Abdulmajeed_QR", extension: "png" });
     }
 </script>
 
