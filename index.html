@@ -8,54 +8,45 @@
 
     <style>
         :root {
-            --main-color: #1e293b; /* لون أسود ملكي متناسق */
+            --main-blue: #0077b5;
             --school-red: #ba0000;
-            --bg-page: #fdfdfd;
+            --bg: #f8fafc;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-page);
+            background-color: var(--bg);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0;
         }
 
         .container {
-            background: white; padding: 2.5rem; border-radius: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-            width: 90%; max-width: 450px; text-align: center;
-            border: 1px solid #f0f0f0;
+            background: white; padding: 2rem; border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%; max-width: 400px; text-align: center;
         }
 
         input {
-            width: 100%; padding: 15px; border: 2px solid #f1f5f9;
-            border-radius: 12px; margin-bottom: 20px; font-size: 1rem;
+            width: 100%; padding: 14px; border: 2px solid #e2e8f0;
+            border-radius: 12px; margin-bottom: 15px; font-size: 1rem;
             text-align: left; direction: ltr; outline: none;
         }
 
         .btn {
-            background: var(--main-color); color: white; border: none;
-            padding: 15px; border-radius: 12px; cursor: pointer;
-            width: 100%; font-weight: bold; margin-bottom: 10px; font-size: 1rem;
+            background: #1e293b; color: white; border: none;
+            padding: 14px; border-radius: 12px; cursor: pointer;
+            width: 100%; font-weight: bold; margin-bottom: 10px;
         }
 
-        .result-area {
-            margin-top: 25px; display: none;
-            animation: fadeIn 0.4s ease-in-out;
-        }
-
-        #qr-holder {
-            margin: 15px 0;
-            display: inline-block;
-            background: #fff;
+        #qr-container {
+            margin: 20px 0;
+            background: white;
             padding: 10px;
-            border-radius: 20px;
+            display: inline-block;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .footer-sig {
-            margin-top: 25px; font-weight: bold; color: var(--school-red);
+        .signature {
+            margin-top: 20px; font-weight: bold; color: var(--school-red);
             font-size: 0.9rem;
         }
     </style>
@@ -63,91 +54,80 @@
 <body>
 
 <div class="container">
-    <h2 style="color: var(--main-color); margin-bottom: 5px;">مختصر الروابط الذكي</h2>
-    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 25px;">ثانوية الأمير عبدالمجيد</p>
+    <h2>مختصر الروابط والـ QR</h2>
+    <p style="color: #64748b;">ثانوية الأمير عبدالمجيد</p>
 
-    <input type="url" id="longUrl" placeholder="https://رابط-الملف-الطويل..." required>
-    <button class="btn" onclick="buildAdvancedQR()">توليد الرمز المدمج</button>
+    <input type="url" id="longUrl" placeholder="أدخل الرابط هنا..." required>
+    <button class="btn" onclick="generateFixedQR()">توليد رمز قابل للقراءة</button>
 
-    <div id="resultArea" class="result-area">
-        <div id="qr-holder"></div>
-        <div id="shortUrlDisplay" style="margin-bottom: 15px; font-weight: bold; color: #2563eb; font-size: 0.85rem;"></div>
-        
-        <button class="btn" style="background:#059669;" onclick="copyResult()">نسخ الرابط</button>
-        <button class="btn" style="background:#475569;" onclick="saveQR()">تحميل الرمز (PNG)</button>
+    <div id="resultArea" style="display:none;">
+        <div id="qr-container"></div>
+        <div id="shortUrl" style="margin-bottom: 15px; font-weight: bold; color: var(--main-blue);"></div>
+        <button class="btn" style="background:#059669;" onclick="copyLink()">نسخ الرابط</button>
+        <button class="btn" style="background:#4b5563;" onclick="downloadLink()">تحميل الرمز</button>
     </div>
 
-    <div class="footer-sig">
+    <div class="signature">
         ✨ أ / عبد العزيز الفيفي - ثانوية الأمير عبدالمجيد 🎓
     </div>
 </div>
 
 <script>
-    let finalQR;
+    let qrStyled;
 
-    async function buildAdvancedQR() {
-        const inputUrl = document.getElementById('longUrl').value;
-        if (!inputUrl) return alert("يرجى وضع الرابط أولاً");
+    async function generateFixedQR() {
+        const url = document.getElementById('longUrl').value;
+        if (!url) return alert("ضع الرابط أولاً");
 
         try {
-            // خطوة الاختصار
-            const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(inputUrl)}`);
+            const res = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(url)}`);
             const data = await res.json();
-            const shortUrl = data.shorturl;
+            const finalUrl = data.shorturl;
 
-            document.getElementById('shortUrlDisplay').innerText = shortUrl;
+            document.getElementById('shortUrl').innerText = finalUrl;
             document.getElementById('resultArea').style.display = 'block';
 
-            // بناء الـ QR بتصميم مدمج (متوافق مع الهوية الرسمية)
-            finalQR = new QRCodeStyling({
+            qrStyled = new QRCodeStyling({
                 width: 300,
                 height: 300,
-                data: shortUrl,
-                dotsOptions: {
-                    color: "#1e293b", // لون النقاط (أسود احترافي)
-                    type: "extra-rounded" // نقاط مستديرة عصرية
-                },
+                data: finalUrl,
+                // السر هنا: رفع مستوى التصحيح إلى Q لضمان القراءة
+                qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
+                dotsOptions: { color: "#1e293b", type: "rounded" },
+                cornersSquareOptions: { type: "extra-rounded", color: "#1e293b" },
                 backgroundOptions: { color: "#ffffff" },
-                cornersSquareOptions: {
-                    type: "extra-rounded", // زوايا مستديرة
-                    color: "#1e293b"
-                },
-                cornersDotOptions: { type: "dot", color: "#1e293b" },
-                // دمج اسم المدرسة في المركز برمجياً كصورة نصية
+                // تقليل حجم النص/الشعار في المركز لكي لا يغطي البيانات
                 image: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="150" height="50">
-                        <rect width="100%" height="100%" fill="white" rx="10"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="40">
+                        <rect width="100%" height="100%" fill="white" rx="5"/>
                         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" 
-                        font-family="Tahoma, sans-serif" font-weight="bold" font-size="12" fill="#ba0000">
+                        font-family="Arial" font-weight="bold" font-size="10" fill="#ba0000">
                             ثانوية الأمير عبدالمجيد
                         </text>
                     </svg>
                 `),
                 imageOptions: {
-                    crossOrigin: "anonymous",
-                    margin: 2,
-                    imageSize: 0.5
+                    hideBackgroundDots: true, // إخفاء النقاط خلف النص لزيادة الدقة
+                    imageSize: 0.3, // حجم صغير ومناسب (30% من المساحة فقط)
+                    margin: 5
                 }
             });
 
-            const container = document.getElementById("qr-holder");
+            const container = document.getElementById("qr-container");
             container.innerHTML = "";
-            finalQR.append(container);
+            qrStyled.append(container);
 
-        } catch (e) {
-            alert("حدث خطأ، تأكد من اتصال الإنترنت");
-        }
+        } catch (e) { alert("حدث خطأ"); }
     }
 
-    function copyResult() {
-        navigator.clipboard.writeText(document.getElementById('shortUrlDisplay').innerText);
-        alert("تم النسخ بنجاح");
+    function copyLink() {
+        navigator.clipboard.writeText(document.getElementById('shortUrl').innerText);
+        alert("تم النسخ");
     }
 
-    function saveQR() {
-        finalQR.download({ name: "QR_Prince_Abdulmajeed", extension: "png" });
+    function downloadLink() {
+        qrStyled.download({ name: "School_QR", extension: "png" });
     }
 </script>
-
 </body>
 </html>
